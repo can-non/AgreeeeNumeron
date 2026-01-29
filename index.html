@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>숫자 야구 연습: 이용약관에 동의하고 싶어</title>
+    <style>
+        :root {
+            --primary: #5c6bc0;
+            --bg: #f5f5f5;
+            --text: #333;
+            --card-bg: #ffffff;
+            --hit-color: #fbc02d;
+            --blow-color: #4fc3f7;
+            --miss-color: #9e9e9e;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .game-container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 400px;
+            text-align: center;
+        }
+        h1 { margin-top: 0; color: var(--primary); }
+        
+        .status-bar {
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #666;
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 120px;
+            padding: 10px;
+            font-size: 1.2rem;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            letter-spacing: 5px;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #3f51b5; }
+        .message-box {
+            height: 30px;
+            margin-bottom: 10px;
+            color: #d32f2f;
+            font-weight: bold;
+        }
+        .history-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+            border-top: 1px solid #eee;
+        }
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .result-badge {
+            display: flex;
+            gap: 2px;
+        }
+        .symbol {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        .sym-hit { color: var(--hit-color); }
+        .sym-blow { color: var(--blow-color); }
+        .sym-miss { color: var(--miss-color); }
+        .practice-mode {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .answer-reveal {
+            margin-top: 5px;
+            color: var(--primary);
+            font-weight: bold;
+            min-height: 1.2em;
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <h1>숫자야구 연습에 동의합니까?</h1>
+    
+    <div class="status-bar">
+        시도 횟수: <span id="countText">0/20</span>
+    </div>
+    <div class="message-box" id="messageBox"></div>
+    <div class="input-area">
+        <input type="text" id="numberInput" maxlength="4" placeholder="0000" autocomplete="off">
+        <button id="submitBtn" onclick="submitGuess()">확인</button>
+    </div>
+    <ul class="history-list" id="hintContainer"></ul>
+    <button id="resetBtn" onclick="resetGame()" style="background-color: #666; display: none; margin-top:15px; width:100%">다시 하기</button>
+    <div class="practice-mode">
+        <label>
+            <input type="checkbox" id="practiceToggle" onchange="togglePractice()"> 연습 모드 (정답 보기)
+        </label>
+        <div id="answerDisplay" class="answer-reveal" style="visibility: hidden;"></div>
+    </div>
+</div>
+<script>
+    let answerNumbers = [];
+    let errorCount = 0;
+    const maxErrorCount = 20;
+    let isHit = false;
+    function setupAnswerNumbers() {
+        answerNumbers = [];
+        for (let i = 0; i < 4; i++) {
+            answerNumbers.push(Math.floor(Math.random() * 10));
+        }
+        updateAnswerDisplay();
+    }
+    function submitGuess() {
+        const inputEl = document.getElementById('numberInput');
+        let value = inputEl.value;
+        if (errorCount >= maxErrorCount || isHit) return;
+        if (value === "") value = "0000";
+        if (isNaN(value)) {
+            setMessage("숫자만 입력해주세요.");
+            return;
+        }
+        let text2 = parseInt(value, 10).toString().padStart(4, '0').substring(0, 4);
+        let text = answerNumbers.join("");
+        inputEl.value = ""; 
+        let result = judge(text, text2);
+        
+        isHit = (text === text2);
+        addHint(text2, result.completeHit, result.hit);
+        if (isHit) {
+            setMessage("성공!");
+            inputEl.disabled = true;
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('resetBtn').style.display = 'block';
+            document.getElementById('numberInput').value = text2;
+        } else {
+            setMessage("틀렸습니다!");
+            errorCount++;
+            updateCountText();
+        }
+    }
+    function judge(answer, input) {
+        let completeHit = 0;
+        let hit = 0;
+        let dictA = {};
+        let dictB = {};
+        for (let i = 0; i < answer.length; i++) {
+            if (answer[i] === input[i]) {
+                completeHit++;
+            } else {
+                const charA = answer[i];
+                const charB = input[i];
+                dictA[charA] = (dictA[charA] || 0) + 1;
+                dictB[charB] = (dictB[charB] || 0) + 1;
+            }
+        }
+        for (let key in dictA) {
+            if (dictB[key]) {
+                hit += Math.min(dictA[key], dictB[key]);
+            }
+        }
+        return { completeHit, hit };
+    }
+    function addHint(value, circleCount, starCount) {
+        const list = document.getElementById('hintContainer');
+        const item = document.createElement('li');
+        item.className = 'history-item';
+        
+        const missCount = 4 - (circleCount + starCount);
+        let resultHTML = "";
+        
+        for(let i=0; i<missCount; i++) {
+            resultHTML += '<span class="symbol sym-miss">·</span>';
+        }
+        for(let i=0; i<starCount; i++) {
+            resultHTML += '<span class="symbol sym-blow">●</span>';
+        }
+        for(let i=0; i<circleCount; i++) {
+            resultHTML += '<span class="symbol sym-hit">★</span>';
+        }
+        item.innerHTML = `
+            <span><strong>${value}</strong></span>
+            <div class="result-badge">${resultHTML}</div>
+        `;
+        
+        list.insertBefore(item, list.firstChild);
+    }
+    function updateCountText() {
+        const text = document.getElementById('countText');
+        text.innerText = `${errorCount}/${maxErrorCount}`;
+        if (errorCount >= maxErrorCount) {
+            setMessage("게임 오버!");
+            document.getElementById('numberInput').disabled = true;
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('resetBtn').style.display = 'block';
+        }
+    }
+    function setMessage(msg) {
+        document.getElementById('messageBox').innerText = msg;
+    }
+    function resetGame() {
+        errorCount = 0;
+        isHit = false;
+        document.getElementById('hintContainer').innerHTML = "";
+        document.getElementById('numberInput').disabled = false;
+        document.getElementById('submitBtn').disabled = false;
+        document.getElementById('resetBtn').style.display = 'none';
+        setMessage("");
+        updateCountText();
+        setupAnswerNumbers();
+    }
+    function togglePractice() {
+        const display = document.getElementById('answerDisplay');
+        display.style.visibility = document.getElementById('practiceToggle').checked ? 'visible' : 'hidden';
+    }
+    function updateAnswerDisplay() {
+        document.getElementById('answerDisplay').innerText = "정답: " + answerNumbers.join("");
+    }
+    document.getElementById('numberInput').onkeypress = (e) => { if(e.key === "Enter") submitGuess(); };
+    setupAnswerNumbers();
+</script>
+</body>
+</html>
