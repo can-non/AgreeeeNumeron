@@ -14,17 +14,26 @@
             --blow-color: #4fc3f7;
             --miss-color: #9e9e9e;
         }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             margin: 0;
+            overflow-x: hidden;
         }
+
+        .main-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            transition: all 0.5s ease;
+        }
+
         .game-container {
             background-color: var(--card-bg);
             padding: 2rem;
@@ -32,117 +41,223 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             width: 400px;
             text-align: center;
+            z-index: 2;
+            position: relative;
         }
-        h1 { margin-top: 0; color: var(--primary); }
-        
-        .status-bar {
-            margin-bottom: 15px;
-            font-weight: bold;
-            color: #666;
-        }
-        .input-area {
+
+        .guide-container {
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 0;
+            opacity: 0;
+            overflow: hidden;
+            height: auto;
+            min-height: 580px;
+            transform: translateX(-20px);
+            transition: width 0.5s cubic-bezier(0.4, 0.0, 0.2, 1),
+                        opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
+                        transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
             display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 20px;
+            flex-direction: column;
         }
+
+        .guide-container.active {
+            width: 340px;
+            opacity: 1;
+            transform: translateX(0);
+            padding: 1.5rem;
+            border: 1px solid #e0e0e0;
+        }
+
+        .guide-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            text-align: left;
+            min-width: 340px;
+        }
+
+        h1 { margin-top: 0; color: var(--primary); }
+        h3 { margin-top: 0; color: #444; border-bottom: 2px solid var(--primary); padding-bottom: 10px;}
+
+        .status-bar { margin-bottom: 15px; font-weight: bold; color: #666; }
+
+        .input-area { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        
         input[type="text"] {
-            width: 120px;
-            padding: 10px;
-            font-size: 1.2rem;
-            text-align: center;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            letter-spacing: 5px;
+            width: 120px; padding: 10px; font-size: 1.2rem; text-align: center;
+            border: 2px solid #ddd; border-radius: 5px; letter-spacing: 5px;
         }
+
         button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background 0.2s;
+            background-color: var(--primary); color: white; border: none;
+            padding: 10px 20px; border-radius: 5px; cursor: pointer;
+            font-size: 1rem; transition: background 0.2s;
         }
         button:hover { background-color: #3f51b5; }
-        .message-box {
-            height: 30px;
-            margin-bottom: 10px;
-            color: #d32f2f;
-            font-weight: bold;
-        }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        .message-box { height: 30px; margin-bottom: 10px; color: #d32f2f; font-weight: bold; }
+
         .history-list {
-            list-style: none;
-            padding: 0;
-            margin-top: 20px;
-            max-height: 250px;
-            overflow-y: auto;
-            border-top: 1px solid #eee;
+            list-style: none; padding: 0; margin-top: 20px;
+            max-height: 250px; overflow-y: auto; border-top: 1px solid #eee;
         }
         .history-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 5px;
-            border-bottom: 1px solid #eee;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 5px; border-bottom: 1px solid #eee;
         }
-        .result-badge {
-            display: flex;
-            gap: 2px;
-        }
+
+        .result-badge { display: flex; gap: 2px; }
         .symbol {
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            line-height: 24px;
-            text-align: center;
-            font-size: 1.4rem;
-            font-weight: bold;
+            display: inline-block; width: 24px; height: 24px;
+            line-height: 24px; text-align: center;
+            font-size: 1.4rem; font-weight: bold;
         }
         .sym-hit { color: var(--hit-color); }
         .sym-blow { color: var(--blow-color); }
         .sym-miss { color: var(--miss-color); }
-        .practice-mode {
-            margin-top: 20px;
-            font-size: 0.9rem;
-            color: #666;
+
+        .options-area {
+            margin-top: 20px; font-size: 0.9rem; color: #666; text-align: left;
+            border-top: 1px solid #eee; padding-top: 15px;
+        }
+        .options-area label { display: block; margin-bottom: 8px; cursor: pointer; }
+        
+        .nested-check { 
+            margin-left: 15px; 
+            border-left: 2px solid #eee; 
+            padding-left: 10px; 
+            display: none; 
+            margin-bottom: 5px;
+        }
+        .nested-check.show { display: block; animation: fadeIn 0.3s; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .lazy-checks { display: flex; gap: 5px; margin-top: 5px; }
+
+        .guide-step {
+            flex-grow: 1;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #333;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding-right: 5px;
+        }
+        .guide-step strong { color: var(--primary); }
+        .guide-next-btn {
+            width: 100%; margin-top: auto;
+            background-color: #ff5722;
+        }
+        .guide-next-btn:hover { background-color: #e64a19; }
+
+        .answer-reveal {
+            margin-top: 5px; color: var(--primary); font-weight: bold; min-height: 1.2em; visibility: hidden;
         }
         
-        .answer-reveal {
-            margin-top: 5px;
-            color: var(--primary);
+        .state-display {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
             font-weight: bold;
-            min-height: 1.2em;
+            color: #333;
+            background: #eee;
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 5px 0;
+            letter-spacing: 3px;
         }
     </style>
 </head>
 <body>
-<div class="game-container">
-    <h1>숫자야구 연습에 동의합니까?</h1>
-    
-    <div class="status-bar">
-        시도 횟수: <span id="countText">0/20</span>
+
+<div class="main-wrapper">
+    <div class="game-container">
+        <h1>숫자야구 연습에 동의합니까?</h1>
+        <div class="status-bar">시도 횟수: <span id="countText">0/20</span></div>
+        <div class="message-box" id="messageBox"></div>
+        <div class="input-area">
+            <input type="text" id="numberInput" maxlength="4" placeholder="0000" autocomplete="off">
+            <button id="submitBtn" onclick="submitGuess()">확인</button>
+        </div>
+        <ul class="history-list" id="hintContainer"></ul>
+        <button id="resetBtn" onclick="resetGame(false)" style="background-color: #666; display: none; margin-top:15px; width:100%">다시 하기</button>
+
+        <div class="options-area">
+            <label><input type="checkbox" id="practiceToggle" onchange="togglePractice()"> 연습 모드 (정답 보기)</label>
+            <div id="answerDisplay" class="answer-reveal"></div>
+
+            <label style="margin-top: 10px; font-weight: bold;">
+                <input type="checkbox" id="chkGuide" onchange="updateCheckboxes()"> 푸는 방법 읽기
+            </label>
+            
+            <div id="nest1" class="nested-check">
+                <label><input type="checkbox" id="chkAgree1" onchange="updateCheckboxes()"> 정말 푸는 방법을 읽는데 동의하십니까?</label>
+                
+                <div id="nest2" class="nested-check">
+                    <label><input type="checkbox" id="chkAgree2" onchange="updateCheckboxes()"> 정말로?</label>
+                    
+                    <div id="nest3" class="nested-check">
+                        <label><input type="checkbox" id="chkAgree3" onchange="updateCheckboxes()"> 진짜로, 정말로, 동의했어?</label>
+                        
+                        <div id="nestLazy" class="nested-check">
+                            <div style="margin-bottom: 5px; color: #d32f2f;">생각하기 귀찮아서 그러죠?</div>
+                            <div class="lazy-checks">
+                                <input type="checkbox" class="lazy-chk" onchange="updateCheckboxes()">
+                                <input type="checkbox" class="lazy-chk" onchange="updateCheckboxes()">
+                                <input type="checkbox" class="lazy-chk" onchange="updateCheckboxes()">
+                                <input type="checkbox" class="lazy-chk" onchange="updateCheckboxes()">
+                                <input type="checkbox" class="lazy-chk" onchange="updateCheckboxes()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="message-box" id="messageBox"></div>
-    <div class="input-area">
-        <input type="text" id="numberInput" maxlength="4" placeholder="0000" autocomplete="off">
-        <button id="submitBtn" onclick="submitGuess()">확인</button>
-    </div>
-    <ul class="history-list" id="hintContainer"></ul>
-    <button id="resetBtn" onclick="resetGame()" style="background-color: #666; display: none; margin-top:15px; width:100%">다시 하기</button>
-    <div class="practice-mode">
-        <label>
-            <input type="checkbox" id="practiceToggle" onchange="togglePractice()"> 연습 모드 (정답 보기)
-        </label>
-        <div id="answerDisplay" class="answer-reveal" style="visibility: hidden;"></div>
+
+    <div class="guide-container" id="guideContainer">
+        <div class="guide-content">
+            <h3>누구나 동의하는 가이드</h3>
+            <div id="guideText" class="guide-step">
+                약관을 읽고 싶지 않았군요!
+                <br><br>
+                이제부터 <strong>가장 논리적인 알고리즘</strong>으로
+                문제를 최소 <strong>'양자택일'</strong> 상황까지 좁혀드리겠습니다.
+                <br><br>
+                나머지 50%는 직접 맞혀보세요!
+                <br><br>
+                준비되셨으면 아래 버튼을 눌러주세요.
+            </div>
+            <button id="guideNextBtn" class="guide-next-btn" onclick="solverStep()" disabled>다음 단계 진행</button>
+        </div>
     </div>
 </div>
+
 <script>
     let answerNumbers = [];
     let errorCount = 0;
     const maxErrorCount = 20;
     let isHit = false;
+    
+    let solver = {
+        active: false,
+        phase: 0, 
+        inventoryIdx: 0,
+        foundNumbers: [],
+        deadNumber: -1,
+        pattern: "",
+        roles: {},
+        logicStep: 0,
+        fixedPositions: [null, null, null, null],
+        probeIdx: -1,
+        checkedIndices: [] 
+    };
+
     function setupAnswerNumbers() {
         answerNumbers = [];
         for (let i = 0; i < 4; i++) {
@@ -150,111 +265,386 @@
         }
         updateAnswerDisplay();
     }
-    function submitGuess() {
+
+    function submitGuess(val = null) {
         const inputEl = document.getElementById('numberInput');
-        let value = inputEl.value;
-        if (errorCount >= maxErrorCount || isHit) return;
+        let value = val !== null ? val : inputEl.value;
+
+        if (errorCount >= maxErrorCount || isHit) return null;
         if (value === "") value = "0000";
-        if (isNaN(value)) {
-            setMessage("숫자만 입력해주세요.");
-            return;
-        }
+        if (isNaN(value)) { setMessage("숫자만 입력해주세요."); return null; }
+
         let text2 = parseInt(value, 10).toString().padStart(4, '0').substring(0, 4);
         let text = answerNumbers.join("");
-        inputEl.value = ""; 
+
+        if(val === null) inputEl.value = ""; 
+
         let result = judge(text, text2);
-        
         isHit = (text === text2);
         addHint(text2, result.completeHit, result.hit);
+
         if (isHit) {
             setMessage("성공!");
             inputEl.disabled = true;
             document.getElementById('submitBtn').disabled = true;
             document.getElementById('resetBtn').style.display = 'block';
             document.getElementById('numberInput').value = text2;
+            if(solver.active) updateGuideText("🎉 정답을 찾았습니다! 이성과 타성의 승리입니다.");
         } else {
-            setMessage("틀렸습니다!");
             errorCount++;
             updateCountText();
         }
+        return result;
     }
+
     function judge(answer, input) {
-        let completeHit = 0;
-        let hit = 0;
-        let dictA = {};
-        let dictB = {};
+        let completeHit = 0; let hit = 0;        
+        let dictA = {}; let dictB = {};
         for (let i = 0; i < answer.length; i++) {
-            if (answer[i] === input[i]) {
-                completeHit++;
-            } else {
-                const charA = answer[i];
-                const charB = input[i];
+            if (answer[i] === input[i]) completeHit++; 
+            else {
+                const charA = answer[i]; const charB = input[i];
                 dictA[charA] = (dictA[charA] || 0) + 1;
                 dictB[charB] = (dictB[charB] || 0) + 1;
             }
         }
         for (let key in dictA) {
-            if (dictB[key]) {
-                hit += Math.min(dictA[key], dictB[key]);
-            }
+            if (dictB[key]) hit += Math.min(dictA[key], dictB[key]);
         }
         return { completeHit, hit };
     }
+
     function addHint(value, circleCount, starCount) {
         const list = document.getElementById('hintContainer');
         const item = document.createElement('li');
         item.className = 'history-item';
-        
         const missCount = 4 - (circleCount + starCount);
         let resultHTML = "";
-        
-        for(let i=0; i<missCount; i++) {
-            resultHTML += '<span class="symbol sym-miss">·</span>';
-        }
-        for(let i=0; i<starCount; i++) {
-            resultHTML += '<span class="symbol sym-blow">●</span>';
-        }
-        for(let i=0; i<circleCount; i++) {
-            resultHTML += '<span class="symbol sym-hit">★</span>';
-        }
-        item.innerHTML = `
-            <span><strong>${value}</strong></span>
-            <div class="result-badge">${resultHTML}</div>
-        `;
-        
+        for(let i=0; i<missCount; i++) resultHTML += '<span class="symbol sym-miss">·</span>';
+        for(let i=0; i<starCount; i++) resultHTML += '<span class="symbol sym-blow">○</span>';
+        for(let i=0; i<circleCount; i++) resultHTML += '<span class="symbol sym-hit">★</span>';
+        item.innerHTML = `<span><strong>${value}</strong></span><div class="result-badge">${resultHTML}</div>`;
         list.insertBefore(item, list.firstChild);
     }
+
     function updateCountText() {
         const text = document.getElementById('countText');
         text.innerText = `${errorCount}/${maxErrorCount}`;
-        if (errorCount >= maxErrorCount) {
+        if (errorCount >= maxErrorCount && !isHit) {
             setMessage("게임 오버!");
-            document.getElementById('numberInput').disabled = true;
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('resetBtn').style.display = 'block';
+            if(solver.active) updateGuideText("기회 부족으로 실패했습니다. 이럴 리가 없는데 무슨 짓을 하셨죠?");
         }
     }
-    function setMessage(msg) {
-        document.getElementById('messageBox').innerText = msg;
-    }
-    function resetGame() {
-        errorCount = 0;
-        isHit = false;
+    function setMessage(msg) { document.getElementById('messageBox').innerText = msg; }
+    
+    function resetGame(keepAnswer = false) {
+        errorCount = 0; isHit = false;
         document.getElementById('hintContainer').innerHTML = "";
         document.getElementById('numberInput').disabled = false;
         document.getElementById('submitBtn').disabled = false;
         document.getElementById('resetBtn').style.display = 'none';
-        setMessage("");
-        updateCountText();
-        setupAnswerNumbers();
+        setMessage(""); updateCountText();
+        
+        const guideBtn = document.getElementById('guideNextBtn');
+        guideBtn.disabled = false;
+        guideBtn.innerText = "다음 단계 진행";
+
+        if (!keepAnswer) {
+            setupAnswerNumbers();
+            document.getElementById('practiceToggle').checked = false;
+            document.getElementById('chkGuide').checked = false;
+            document.getElementById('chkAgree1').checked = false;
+            document.getElementById('chkAgree2').checked = false;
+            document.getElementById('chkAgree3').checked = false;
+            document.querySelectorAll('.lazy-chk').forEach(el => el.checked = false);
+            updateCheckboxes(); 
+            togglePractice();
+        } else {
+            console.log("정답 유지: " + answerNumbers.join(""));
+        }
+        
+        solver.phase = 1;
+        solver.inventoryIdx = 0;
+        solver.foundNumbers = [];
+        solver.deadNumber = -1;
+        solver.fixedPositions = [null, null, null, null];
+        solver.probeIdx = -1;
+        solver.checkedIndices = [];
+        
+        if (solver.active) {
+            updateGuideText("게임을 초기화했습니다.\n\n[1단계: 재료 찾기]\n0000~9999를 입력하여 어떤 숫자가 쓰였는지 확인합니다.");
+            guideBtn.disabled = false;
+        }
     }
+
     function togglePractice() {
         const display = document.getElementById('answerDisplay');
         display.style.visibility = document.getElementById('practiceToggle').checked ? 'visible' : 'hidden';
     }
-    function updateAnswerDisplay() {
-        document.getElementById('answerDisplay').innerText = "정답: " + answerNumbers.join("");
+    function updateAnswerDisplay() { document.getElementById('answerDisplay').innerText = "정답: " + answerNumbers.join(""); }
+
+    function updateCheckboxes() {
+        const c1 = document.getElementById('chkGuide');
+        const n1 = document.getElementById('nest1');
+        const c2 = document.getElementById('chkAgree1');
+        const n2 = document.getElementById('nest2');
+        const c3 = document.getElementById('chkAgree2');
+        const n3 = document.getElementById('nest3');
+        const c4 = document.getElementById('chkAgree3');
+        const nLazy = document.getElementById('nestLazy');
+        const lazyChks = document.querySelectorAll('.lazy-chk');
+        const guideCont = document.getElementById('guideContainer');
+
+        n1.classList.toggle('show', c1.checked); if(!c1.checked) c2.checked = false;
+        n2.classList.toggle('show', c2.checked); if(!c2.checked) c3.checked = false;
+        n3.classList.toggle('show', c3.checked); if(!c3.checked) c4.checked = false;
+        nLazy.classList.toggle('show', c4.checked); if(!c4.checked) lazyChks.forEach(c => c.checked = false);
+
+        let allLazy = true;
+        lazyChks.forEach(c => { if(!c.checked) allLazy = false; });
+
+        if (c1.checked && c2.checked && c3.checked && c4.checked && allLazy) {
+            guideCont.classList.add('active');
+            document.getElementById('guideNextBtn').disabled = false;
+            if (!solver.active) { 
+                solver.active = true; 
+                resetGame(true);
+            }
+        } else {
+            guideCont.classList.remove('active');
+            solver.active = false;
+        }
     }
+
+    function updateGuideText(text) {
+        const div = document.getElementById('guideText');
+        div.innerHTML = text.replace(/\n/g, "<br>");
+        div.scrollTop = div.scrollHeight;
+    }
+    
+    function getStateString() {
+        return solver.fixedPositions.map(v => v === null ? "?" : v).join("");
+    }
+
+    function solverStep() {
+        if(isHit || errorCount >= maxErrorCount) return;
+
+        if (solver.phase === 1) {
+            const digit = solver.inventoryIdx;
+            const guess = digit.toString().repeat(4);
+            const result = submitGuess(guess);
+            const hits = result.completeHit;
+
+            if (hits > 0) { for(let k=0; k<hits; k++) solver.foundNumbers.push(digit); } 
+            else { if (solver.deadNumber === -1) solver.deadNumber = digit; }
+
+            solver.inventoryIdx++;
+            let msg = `[재료 탐색] ${guess} 확인... ${hits}개 발견.\n(현재 확보: [${solver.foundNumbers.join(", ")}])`;
+
+            if (solver.foundNumbers.length === 4) {
+                solver.phase = 2;
+                solver.logicStep = 0;
+                msg += `\n\n🎯 재료 확보 완료!`;
+                
+                const counts = {};
+                solver.foundNumbers.forEach(x => counts[x] = (counts[x] || 0) + 1);
+                const distinct = Object.keys(counts).length;
+                let sortedNums = Object.keys(counts).sort((a,b) => counts[b] - counts[a]).map(Number);
+
+                if (distinct === 2) {
+                     const vals = Object.values(counts);
+                     if (vals.includes(3)) solver.pattern = "aaab";
+                     else solver.pattern = "aabb";
+                } else if (distinct === 3) solver.pattern = "aabc";
+                else if (distinct === 4) solver.pattern = "abcd";
+                else solver.pattern = "aaaa";
+
+                msg += `\n유형: ${solver.pattern} (${sortedNums.join(",")})\n\n이제 위치 확정 단계로 넘어갑니다.`;
+                
+                solver.roles = {
+                    a: sortedNums[0],
+                    b: sortedNums[1],
+                    c: sortedNums[2],
+                    d: sortedNums[3],
+                    x: solver.deadNumber !== -1 ? solver.deadNumber : (sortedNums.includes(0) ? 9 : 0)
+                };
+            }
+            updateGuideText(msg);
+            return;
+        }
+
+        if (solver.phase === 2) {
+            doLogicPhase();
+        }
+    }
+
+    function doLogicPhase() {
+        const p = solver.pattern;
+        const r = solver.roles;
+        const ls = solver.logicStep;
+        
+        if (p === "aaab") {
+            if (ls === 0) {
+                const guess = `${r.a}${r.a}${r.x}${r.x}`;
+                solver.res1 = submitGuess(guess);
+                updateGuideText(`[유형: aaab]\n소수(b)를 찾기 위해 aaxx (${guess})를 입력합니다.`);
+                solver.logicStep++;
+            } else if (ls === 1) {
+                const guess = `${r.a}${r.x}${r.x}${r.a}`;
+                const currRes = submitGuess(guess);
+                
+                let h1 = solver.res1.completeHit;
+                let h2 = currRes.completeHit;
+                let bPos = -1;
+                
+                if (h1===2 && h2===1) bPos = 3;
+                else if (h1===2 && h2===2) bPos = 2;
+                else if (h1===1 && h2===2) bPos = 1;
+                else if (h1===1 && h2===1) bPos = 0;
+                
+                solver.fixedPositions = [r.a, r.a, r.a, r.a];
+                solver.fixedPositions[bPos] = r.b;
+                let finalGuess = solver.fixedPositions.join("");
+                
+                updateGuideText(`[유형: aaab]\n교차 검증을 위해 axxa (${guess})를 입력합니다.\n\n분석 결과: b는 ${bPos+1}번째 자리입니다.\n정답을 자동으로 입력합니다.`);
+                submitGuess(finalGuess);
+                
+                finishGuide(`[정답 확정]\n\n두 번의 부분 추정으로 b의 위치를 완벽하게 찾아냈습니다.\n(상태: <span class="state-display">${finalGuess}</span>)\n\n정답: ${finalGuess}`);
+            }
+        }
+        
+        else if (p === "aabb" || p === "aabc") {
+            if (ls === 0) {
+                const guess = `${r.a}${r.a}${r.x}${r.x}`;
+                solver.res1 = submitGuess(guess);
+                updateGuideText(`[유형: ${p}]\n중복된 ${r.a}의 위치를 찾기 위해\naaxx (${guess})를 입력합니다.`);
+                solver.logicStep++;
+            } else if (ls === 1) {
+                const guess = `${r.a}${r.x}${r.x}${r.a}`;
+                solver.res2 = submitGuess(guess);
+                
+                let hits1 = solver.res1.completeHit;
+                let hits2 = solver.res2.completeHit;
+                
+                if (hits1===2) { solver.fixedPositions[0]=r.a; solver.fixedPositions[1]=r.a; }
+                else if (hits2===2) { solver.fixedPositions[0]=r.a; solver.fixedPositions[3]=r.a; }
+                else if (hits1===0 && hits2===1) { solver.fixedPositions[2]=r.a; solver.fixedPositions[3]=r.a; } // ..aa
+                else if (hits1===1 && hits2===0) { solver.fixedPositions[1]=r.a; solver.fixedPositions[2]=r.a; } // .aa.
+                
+                
+                if (hits1 === 1 && hits2 === 1) {
+                    updateGuideText(`[유형: ${p}]\naxxa (${guess}) 입력 결과 (●★, ●★) 확실한 구분이 더 필요합니다.\n추가 검증을 진행합니다.`);
+                    solver.logicStep = 2;
+                } else {
+                    updateGuideText(`[유형: ${p}]\naxxa (${guess})를 입력합니다.\n\n현재 상태: <span class="state-display">${getStateString()}</span>`);
+                    solver.logicStep = 100;
+                }
+            } else if (ls === 2) {
+                const guess = `${r.a}${r.x}${r.a}${r.x}`;
+                let res = submitGuess(guess);
+                if (res.completeHit === 2) {
+                    solver.fixedPositions[0]=r.a; solver.fixedPositions[2]=r.a;
+                } else {
+                    solver.fixedPositions[1]=r.a; solver.fixedPositions[3]=r.a;
+                }
+                updateGuideText(`[추가 검증] axax (${guess})를 입력하여 충돌을 해결했습니다.\n\n현재 상태: <span class="state-display">${getStateString()}</span>`);
+                solver.logicStep = 100;
+            } 
+            
+            if (solver.logicStep === 100) {
+                if (p === "aabb") {
+                     let finalGuessArr = [...solver.fixedPositions];
+                     for(let i=0; i<4; i++) { if(finalGuessArr[i] === null) finalGuessArr[i] = r.b; }
+                     let finalGuess = finalGuessArr.join("");
+                     submitGuess(finalGuess);
+                     finishGuide(`[정답 확정]\n\n${r.a}의 위치가 확정되었고 남은 숫자는 ${r.b} 두 개뿐입니다.\n따라서 남은 빈칸은 모두 ${r.b}입니다.\n\n정답을 자동으로 입력했습니다: ${finalGuess}`);
+                } else {
+                     finishGuide(`[최종 단계: 양자택일]\n\n${r.a}의 위치가 확정되었습니다. (상태: <span class="state-display">${getStateString()}</span>)\n남은 빈칸에 나머지 숫자(${r.b}, ${r.c})를 배치하는 경우의 수는 단 2가지뿐입니다.\n\n50% 확률입니다. 하나를 찍어보세요!`);
+                }
+            }
+        }
+
+        else if (p === "abcd") {
+            if (ls === 0) {
+                const guess = `${r.a}${r.a}${r.x}${r.x}`;
+                solver.res1 = submitGuess(guess);
+                updateGuideText(`[유형: abcd] 순서 찾기 시작\n\n1. 첫 번째 숫자 ${r.a}의 위치를 찾습니다.\n이진 탐색 aaxx (${guess}) 입력.`);
+                solver.logicStep++;
+            } else if (ls === 1) {
+                const guess = `${r.a}${r.x}${r.x}${r.a}`;
+                solver.res2 = submitGuess(guess);
+                
+                let hits1 = solver.res1.completeHit; 
+                let hits2 = solver.res2.completeHit;
+                let aPos = (hits1 >= 1 && hits2 >= 1) ? 0 : (hits1 >= 1 ? 1 : (hits2 >= 1 ? 3 : 2));
+                
+                solver.fixedPositions[aPos] = r.a;
+                solver.logicStep++;
+                
+                updateGuideText(`2. axxa (${guess}) 입력.\n-> 분석 결과: ${r.a}의 위치는 [${aPos + 1}번째]입니다.\n\n현재 상태: <span class="state-display">${getStateString()}</span>\n\n이제 두 번째 숫자 ${r.b}의 위치를 찾습니다.`);
+            } 
+            else {
+                let emptyIndices = solver.fixedPositions.map((v, i) => v === null ? i : -1).filter(i => i !== -1);
+                let candidates = emptyIndices.filter(idx => !solver.checkedIndices.includes(idx));
+                
+                if (solver.probeIdx === -1) {
+                    if (candidates.length === 0) {
+                         solver.probeIdx = emptyIndices[0];
+                    } else {
+                         solver.probeIdx = candidates[0];
+                    }
+
+                    let guessArr = [...solver.fixedPositions]; 
+                    
+                    for(let i=0; i<4; i++) {
+                        if (guessArr[i] === null) {
+                            if (i === solver.probeIdx) guessArr[i] = r.b;
+                            else guessArr[i] = r.x;
+                        }
+                    }
+                    let guess = guessArr.join("");
+                    
+                    solver.lastProbeRes = submitGuess(guess);
+                    updateGuideText(`[위치 탐색] 확정된 ${r.a}와 함께, ${r.b}가 ${solver.probeIdx + 1}번째 자리에 있는지 확인합니다.\n입력: ${guess}`);
+                    
+                    let fixedHits = 0;
+                    solver.fixedPositions.forEach(n => { if(n !== null) fixedHits++; });
+                    let isHit = solver.lastProbeRes.completeHit > fixedHits;
+
+                    if (isHit) {
+                        solver.fixedPositions[solver.probeIdx] = r.b;
+                        solver.logicStep = 100;
+                    } else {
+                        solver.checkedIndices.push(solver.probeIdx);
+                        let remaining = emptyIndices.filter(idx => idx !== solver.probeIdx && !solver.checkedIndices.includes(idx));
+                        
+                        let realCandidates = emptyIndices.filter(idx => !solver.checkedIndices.includes(idx));
+
+                        if (realCandidates.length === 1) {
+                            solver.fixedPositions[realCandidates[0]] = r.b;
+                            updateGuideText(`-> 빗나갔습니다! 이제 ${r.b}가 들어갈 수 있는 빈 자리는 하나뿐이므로\n자동으로 ${realCandidates[0] + 1}번째 자리로 확정됩니다.`);
+                            solver.logicStep = 100;
+                        } else {
+                            solver.probeIdx = -1;
+                            updateGuideText(`-> 빗나갔습니다. ${r.b}는 ${solver.probeIdx + 1}번째가 아닙니다.\n(상태: <span class="state-display">${getStateString()}</span>)\n다음 가능성을 확인합니다.`);
+                        }
+                    }
+                }
+            }
+            
+            if (solver.logicStep === 100) {
+                 finishGuide(`[최종 단계: 양자택일]\n\na와 b의 위치가 확정되었습니다.\n(상태: <span class="state-display">${getStateString()}</span>)\n\n이제 남은 자리는 2개, 남은 숫자는 ${r.c}, ${r.d}입니다.\n정답은 [${r.c}${r.d}] 순서거나 [${r.d}${r.c}] 순서입니다.\n직접 마무리해보세요!`);
+            }
+        }
+    }
+
+    function finishGuide(msg) {
+        updateGuideText(msg);
+        document.getElementById('guideNextBtn').disabled = true;
+        document.getElementById('guideNextBtn').innerText = "가이드 종료 (알아서 하세요!)";
+        solver.active = false;
+    }
+
     document.getElementById('numberInput').onkeypress = (e) => { if(e.key === "Enter") submitGuess(); };
     setupAnswerNumbers();
 </script>
